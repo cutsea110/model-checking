@@ -11,7 +11,6 @@ open import Data.Product renaming (_×_ to _⊗_)
 open import Data.Sum renaming (_⊎_ to _⊕_)
 open import Function using (_∘_; const)
 open import Relation.Unary using (_∈_; Pred; _⊆_)
-open import Relation.Nullary renaming (¬_ to !_)
 
 -- Definition 2.1
 data Form : Set where
@@ -24,10 +23,15 @@ data Form : Set where
 Form' : Pred Form lzero
 Form' = const ⊤
 
--- _⊨_ is not strictly positive, because of ¬_ and _⇒_
-data _⊨_ (V : Pred Form lzero) : Form → Set where
-  Atom : ∀ {p} → p ∈ V → V ⊨ p
-  ¬_   : ∀ {φ} → ! (V ⊨ φ) → V ⊨ (¬ φ)
-  _∧_  : ∀ {φ ψ} → V ⊨ φ ⊗ V ⊨ ψ → V ⊨ (φ ∧ ψ)
-  _∨_  : ∀ {φ ψ} → V ⊨ φ ⊕ V ⊨ ψ → V ⊨ (φ ∨ ψ)
-  ⊃_  : ∀ {φ ψ} → (V ⊨ φ → V ⊨ ψ) → V ⊨ (φ ⇒ ψ)
+data _⊨_ (V : Pred Form lzero) : Form → Set
+
+_⊭_ : Pred Form lzero → Form → Set
+V ⊭ φ = V ⊨ φ → ⊥
+
+-- _⊨_ is not strictly positive, because of neg and imp
+data _⊨_ (V : Pred Form lzero) where
+  atom : ∀ {p}   → p ∈ V → V ⊨ p
+  neg  : ∀ {φ}   → V ⊭ φ → V ⊨ (¬ φ)
+  conj : ∀ {φ ψ} → V ⊨ φ ⊗ V ⊨ ψ → V ⊨ (φ ∧ ψ)
+  disj : ∀ {φ ψ} → V ⊨ φ ⊕ V ⊨ ψ → V ⊨ (φ ∨ ψ)
+  imp  : ∀ {φ ψ} → (V ⊨ φ → V ⊨ ψ) → V ⊨ (φ ⇒ ψ)
